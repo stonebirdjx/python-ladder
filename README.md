@@ -16,6 +16,20 @@
 - [多重继承](#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF)
 - [弱引用](#%E5%BC%B1%E5%BC%95%E7%94%A8)
 - [虚拟环境和包](#%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83%E5%92%8C%E5%8C%85)
+- [解压后同时赋值给 N 个变量](#%E8%A7%A3%E5%8E%8B%E5%90%8E%E5%90%8C%E6%97%B6%E8%B5%8B%E5%80%BC%E7%BB%99-n-%E4%B8%AA%E5%8F%98%E9%87%8F)
+- [无穷大与NaN](#%E6%97%A0%E7%A9%B7%E5%A4%A7%E4%B8%8Enan)
+- [手动遍历迭代器](#%E6%89%8B%E5%8A%A8%E9%81%8D%E5%8E%86%E8%BF%AD%E4%BB%A3%E5%99%A8)
+- [给函数参数增加元信息](#%E7%BB%99%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0%E5%A2%9E%E5%8A%A0%E5%85%83%E4%BF%A1%E6%81%AF)
+- [让对象支持上下文管理协议](#%E8%AE%A9%E5%AF%B9%E8%B1%A1%E6%94%AF%E6%8C%81%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E5%8D%8F%E8%AE%AE)
+- [创建大量对象时节省内存方法](#%E5%88%9B%E5%BB%BA%E5%A4%A7%E9%87%8F%E5%AF%B9%E8%B1%A1%E6%97%B6%E8%8A%82%E7%9C%81%E5%86%85%E5%AD%98%E6%96%B9%E6%B3%95)
+- [访问私有变量数据](#%E8%AE%BF%E9%97%AE%E7%A7%81%E6%9C%89%E5%8F%98%E9%87%8F%E6%95%B0%E6%8D%AE)
+- [@property创建可管理的属性](#property%E5%88%9B%E5%BB%BA%E5%8F%AF%E7%AE%A1%E7%90%86%E7%9A%84%E5%B1%9E%E6%80%A7)
+- [定义接口或者抽象基类](#%E5%AE%9A%E4%B9%89%E6%8E%A5%E5%8F%A3%E6%88%96%E8%80%85%E6%8A%BD%E8%B1%A1%E5%9F%BA%E7%B1%BB)
+- [创建不调用init方法的实例](#%E5%88%9B%E5%BB%BA%E4%B8%8D%E8%B0%83%E7%94%A8init%E6%96%B9%E6%B3%95%E7%9A%84%E5%AE%9E%E4%BE%8B)
+- [创建装饰器时保留函数元信息](#%E5%88%9B%E5%BB%BA%E8%A3%85%E9%A5%B0%E5%99%A8%E6%97%B6%E4%BF%9D%E7%95%99%E5%87%BD%E6%95%B0%E5%85%83%E4%BF%A1%E6%81%AF)
+- [模块与包](#%E6%A8%A1%E5%9D%97%E4%B8%8E%E5%8C%85)
+- [定义上下文管理器的简单方法](#%E5%AE%9A%E4%B9%89%E4%B8%8A%E4%B8%8B%E6%96%87%E7%AE%A1%E7%90%86%E5%99%A8%E7%9A%84%E7%AE%80%E5%8D%95%E6%96%B9%E6%B3%95)
+- [参考资料](#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -394,3 +408,284 @@ tutorial-env\Scripts\activate.bat
 ```
 source tutorial-env/bin/activate
 ```
+
+# 解压后同时赋值给 N 个变量
+
+任何的序列（或者是可迭代对象）可以通过一个简单的赋值操作来分解为单独的变量。 **唯一的要求就是变量的总数和结构必须与序列相吻合。**
+
+```python
+data = [ 'ACME', 50, 91.1, (2012, 12, 21) ]
+name, shares, price, date = data
+name, shares, price, (year, mon, day) = data
+_, shares, price, _ = data  # 你必须保证你选用的那些占位变量名在其他地方没被使用到。
+# 如果元素的数量不匹配，会得到一个错误提示。
+```
+
+星号表达式也能用在列表的部分。
+
+```python
+record = ('Dave', 'dave@example.com', '773-555-1212', '847-555-1212')
+name, email, *phone_numbers = record
+print(phone_numbers)
+# ['773-555-1212', '847-555-1212']
+```
+
+# 无穷大与NaN
+
+python并没有特殊的语法来表示这些特殊的浮点值，但是可以使用 `float()` 来创建它们。
+
+```python
+a = float('inf')
+b = float('-inf')
+c = float('nan')
+```
+
+# 手动遍历迭代器
+
+
+
+```python
+>>> items = [1, 2, 3]
+>>> # Get the iterator
+>>> it = iter(items) # Invokes items.__iter__()
+>>> # Run the iterator
+>>> next(it) # Invokes it.__next__()
+1
+>>> next(it)
+2
+>>> next(it)
+3
+>>> next(it)
+Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+StopIteration
+>>>
+```
+
+# 给函数参数增加元信息
+
+```python
+def add(x:int, y:int) -> int:
+    return x + y
+```
+
+函数注解只存储在函数的 `__annotations__` 属性中。
+
+```python
+>>> add.__annotations__
+{'y': <class 'int'>, 'return': <class 'int'>, 'x': <class 'int'>}
+```
+
+# 让对象支持上下文管理协议
+
+为了让一个对象兼容 `with` 语句，你需要实现 `__enter__()` 和 `__exit__()` 方法。 例如，考虑如下的一个类，它能为我们创建一个网络连接：
+
+```python
+from socket import socket, AF_INET, SOCK_STREAM
+
+class LazyConnection:
+    def __init__(self, address, family=AF_INET, type=SOCK_STREAM):
+        self.address = address
+        self.family = family
+        self.type = type
+        self.connections = []
+
+    def __enter__(self):
+        sock = socket(self.family, self.type)
+        sock.connect(self.address)
+        self.connections.append(sock)
+        return sock
+
+    def __exit__(self, exc_ty, exc_val, tb):
+        self.connections.pop().close()
+
+# Example use
+from functools import partial
+
+conn = LazyConnection(('www.python.org', 80))
+with conn as s1:
+    pass
+    with conn as s2:
+        pass
+        # s1 and s2 are independent sockets
+```
+
+`open` 函数也是类似的道理。
+
+# 创建大量对象时节省内存方法
+
+对于主要是用来当成简单的数据结构的类而言，你可以通过给类添加 `__slots__` 属性来极大的减少实例所占的内存。
+
+```python
+class Date:
+    __slots__ = ['year', 'month', 'day']
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+```
+
+当你定义 `__slots__` 后，Python就会为实例使用一种更加紧凑的内部表示。 实例通过一个很小的固定大小的数组来构建，而不是为每个实例定义一个字典，这跟元组或列表很类似。
+
+# 访问私有变量数据
+
+私有属性会被分别重命名为 `_B__private` 和 `_B__private_method` 。
+
+```python
+# __private 私有变量，自身能直接访问
+# _protect 保护变量，同包能直接访问
+```
+
+> 请尊重python的规则，不要跨界访问私有变量
+
+# @property创建可管理的属性
+
+自定义某个属性的一种简单方法是将它定义为一个property。 例如，下面的代码定义了一个property，增加对一个属性简单的类型检查：
+
+```python
+class Person:
+    def __init__(self, first_name):
+        self._first_name = first_name
+
+    # Getter function
+    @property
+    def first_name(self):
+        return self._first_name
+
+    # Setter function
+    @first_name.setter
+    def first_name(self, value):
+        if not isinstance(value, str):
+            raise TypeError('Expected a string')
+        self._first_name = value
+
+    # Deleter function (optional)
+    @first_name.deleter
+    def first_name(self):
+        raise AttributeError("Can't delete attribute")
+```
+
+# 定义接口或者抽象基类
+
+```python
+from abc import ABCMeta, abstractmethod
+
+class IStream(metaclass=ABCMeta):
+    @abstractmethod
+    def read(self, maxbytes=-1):
+        pass
+
+    @abstractmethod
+    def write(self, data):
+        pass
+```
+
+# 创建不调用init方法的实例
+
+可以通过 `__new__()` 方法创建一个未初始化的实例。
+
+```python
+class Date:
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+# 需要手动初始化
+data = {'year':2012, 'month':8, 'day':29}
+for key, value in data.items():
+    setattr(d, key, value)
+        
+d = Date.__new__(Date)
+>>> d.year
+2012
+>>> d.month
+```
+
+# 创建装饰器时保留函数元信息
+
+任何时候你定义装饰器的时候，都应该使用 `functools` 库中的 `@wraps` 装饰器来注解底层包装函数。
+
+```python
+import time
+from functools import wraps
+def timethis(func):
+    '''
+    Decorator that reports the execution time.
+    '''
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        end = time.time()
+        print(func.__name__, end-start)
+        return result
+    return wrapper
+```
+
+元信息
+
+```python
+>>> @timethis
+... def countdown(n):
+...     '''
+...     Counts down
+...     '''
+...     while n > 0:
+...         n -= 1
+...
+>>> countdown(100000)
+countdown 0.008917808532714844
+>>> countdown.__name__
+'countdown'
+>>> countdown.__doc__
+'\n\tCounts down\n\t'
+>>> countdown.__annotations__
+{'n': <class 'int'>}
+>>>
+```
+
+# 模块与包
+
+python模块与包应该保存以下样式。
+
+```python
+graphics/
+    __init__.py
+    primitive/
+        __init__.py
+        line.py
+        fill.py
+        text.py
+    formats/
+        __init__.py
+        png.py
+        jpg.py
+```
+
+# 定义上下文管理器的简单方法
+
+实现一个新的上下文管理器的最简单的方法就是使用 `contexlib` 模块中的 `@contextmanager` 装饰器。 下面是一个实现了代码块计时功能的上下文管理器例子
+
+```python
+import time
+from contextlib import contextmanager
+
+@contextmanager
+def timethis(label):
+    start = time.time()
+    try:
+        yield
+    finally:
+        end = time.time()
+        print('{}: {}'.format(label, end - start))
+
+# Example use
+with timethis('counting'):
+    n = 10000000
+    while n > 0:
+        n -= 1
+```
+
+# 参考资料
+
+[python cookbook](https://python3-cookbook.readthedocs.io/zh_CN/latest/c04/p02_delegating_iteration.html)
