@@ -19,6 +19,12 @@
   - [`__ne__`(self, other) -- 不等于](#__ne__self-other----%E4%B8%8D%E7%AD%89%E4%BA%8E)
   - [`__gt__`(self, other) -- 小于](#__gt__self-other----%E5%B0%8F%E4%BA%8E)
   - [`__ge__`(self, other) -- 小于等于](#__ge__self-other----%E5%B0%8F%E4%BA%8E%E7%AD%89%E4%BA%8E)
+- [自定义属性访问](#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%B1%9E%E6%80%A7%E8%AE%BF%E9%97%AE)
+  - [`__getattr__`(self, *name*) -- 访问实例属性](#__getattr__self-name----%E8%AE%BF%E9%97%AE%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7)
+  - [`__getattribute__`(*self*, *name*) - -- 访问实例属性](#__getattribute__self-name------%E8%AE%BF%E9%97%AE%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7)
+  - [`__setattr__`(*self*, *name*, *value*)  -- 设置实例属性](#__setattr__self-name-value-----%E8%AE%BE%E7%BD%AE%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7)
+  - [`__delattr__`(*self*, *name*)  -- 删除实例属性](#__delattr__self-name-----%E5%88%A0%E9%99%A4%E5%AE%9E%E4%BE%8B%E5%B1%9E%E6%80%A7)
+  - [:point_right:`__dir__`(*self*) -- 被调用的列表](#point_right__dir__self----%E8%A2%AB%E8%B0%83%E7%94%A8%E7%9A%84%E5%88%97%E8%A1%A8)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -285,5 +291,86 @@ class weight:
 a=weight(50)
 b=weight(60)
 print(a <= b) # False
+```
+
+# 自定义属性访问
+
+## `__getattr__`(self, *name*) -- 访问实例属性
+
+当默认属性访问因引发 AttributeError 而失败时被调用 (可能是调用` __getattribute__`() 时由于 name 不是一个实例属性或 self 的类关系树中的属性而引发了 AttributeError；或者是对 name 特性属性调用 `__get__`() 时引发了 AttributeError)。
+
+```python
+class ObjectDict(dict):
+    def __init__(self, *args, **kwargs):
+        super(ObjectDict, self).__init__(*args, **kwargs)
+
+    def __getattr__(self, name):
+        value =  self[name]
+        if isinstance(value, dict):
+            value = ObjectDict(value)
+        return value
+
+if __name__ == '__main__':
+    od = ObjectDict(asf={'a': 1}, d=True)
+    print(od.asf) #{'a':1}
+    print(od.asf.a) # 1
+    print(od.d) # true
+```
+
+## `__getattribute__`(*self*, *name*) - -- 访问实例属性 
+
+此方法会无条件地被调用以实现对类实例属性的访问。如果类还定义了 `__getattr__`()，则后者不会被调用，除非 `__getattribute__`() 显式地调用它或是引发了 AttributeError。
+
+```python
+class StoneBird(object):
+    def __init__(self,name):
+        self.name = name
+    def __getattribute__(self,obj):
+        return object.__getattribute__(self,obj)
+sb = StoneBird("stone")
+print(sb.name) # stone
+```
+
+## `__setattr__`(*self*, *name*, *value*)  -- 设置实例属性
+
+在一个属性被尝试赋值时被调用。这个调用会取代正常机制（即将值保存到实例字典）。 *name* 为属性名称， *value* 为要赋给属性的值。
+
+```python
+class StoneBird(object):
+    def __init__(self, name, alias):
+        self.name = name
+        self.alias = alias
+
+    def __setattr__(self, key, value):
+        # 需要用的__dict__属性
+        # self.__dict__[key] = value  
+        super().__setattr__(key, value)  # 二者在一定在不存在 __getattrbute__ 时，效果是一样的
+        # self.key = value  # 如果还这样调用会出现无限递归的情况
+sb = StoneBird("stone","bird")
+sb.age = 18
+```
+
+## `__delattr__`(*self*, *name*)  -- 删除实例属性
+
+类似于 `__setattr__`() 但其作用为删除而非赋值。此方法应该仅在 del obj.name 对于该对象有意义时才被实现。
+
+```python
+class StoneBird:
+    def __delattr__(self, name):
+        print "deleting `{}`".format(str(name))
+        del self.__dict__[name]
+        print "`{}` deleted".format(str(name))
+```
+
+## :point_right:`__dir__`(*self*) -- 被调用的列表
+
+此方法会在对相应对象调用 dir() 时被调用。返回值必须为一个序列。 dir() 会把返回的序列转换为列表并对其排序。
+
+```python
+class StoneBird():
+    def __dir__(self):
+        return [1,2,3]
+
+print(dir(StoneBird())) # [1,2,3]
 ```
 
